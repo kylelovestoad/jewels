@@ -10,11 +10,12 @@ local Stats = require "src.game.Stats"
 
 -- Load is executed only once; used to setup initial resource for your game
 function love.load()
-    love.window.setTitle("CS489 Jewels")
+    love.window.setTitle("Jewels")
     Push:setupScreen(gameWidth, gameHeight, windowWidth, windowHeight, {fullscreen = false, resizable = true})
     math.randomseed(os.time()) -- RNG setup for later
 
     titleFont = love.graphics.newFont(32)
+    bigFont = love.graphics.newFont(28)
 
     bg1 = Background("graphics/bg/background1.png",30)
     bg2 = Background("graphics/bg/background2.png",60)
@@ -42,16 +43,19 @@ function love.keypressed(key)
         debugFlag = not debugFlag
     elseif key == "return" and gameState=="start" then
         gameState = "play"
+    elseif key == "return" and gameState == "over" then
+        stats:reset()
+        gameState = "play"
     end
 end
 
 -- Event to handle mouse pressed (there is another for mouse release)
-function love.mousepressed(x, y, button, istouch)
+function love.mousepressed(x, y, button, _)
     local gx, gy = Push:toGame(x,y)
     if button == 1 then -- regurlar mouse click
         board:mousepressed(gx,gy)
     elseif debugFlag then
-        if button == 2 and love.keyboard.isDown("lctrl","rctrl") then
+        if button == 2 and love.keyboard.isDown("a","d") then
            testexp:trigger(gx,gy)
         elseif button == 2 then
             board:cheatGem(gx,gy)
@@ -64,17 +68,24 @@ function love.update(dt)
     bg1:update(dt)
     bg2:update(dt)
     testexp:update(dt)
-    stats:update(dt)
+
+    if stats.countdown == 0 and gameState == "play" then 
+        Sounds["timeOut"]:play()
+        gameState = "over"
+    end
 
     if gameState == "start" then
 
         gem1:update(dt)
         gem2:update(dt)
     elseif gameState == "play" then
+        Sounds["playStateMusic"]:play()
+        stats:update(dt)
         board:update(dt)
 
     elseif gameState == "over" then
         -- for later, if we needed
+        Sounds["playStateMusic"]:stop()
     end
 end
 
@@ -105,7 +116,7 @@ function drawStartState()
     bg1:draw()
     bg2:draw()
 
-    love.graphics.printf("CS489 Jewels",titleFont,0,50,
+    love.graphics.printf("Jewels",titleFont,0,50,
         gameWidth,"center")
     love.graphics.printf("Press Enter to Play or Escape to exit",
         0,90, gameWidth,"center")
@@ -125,8 +136,12 @@ function drawPlayState()
 end
 
 function drawGameOverState()
-    love.graphics.printf("GameOver",titleFont,0,50,
+    love.graphics.printf("Game Over",titleFont,0,50,
         gameWidth,"center")
     love.graphics.printf("Press Enter to Play or Escape to exit",
-        0,90, gameWidth,"center")
+        0,230, gameWidth,"center")
+    love.graphics.printf("Level: "..stats.level,
+        bigFont,0,130,gameWidth,"center")
+    love.graphics.printf("High Score: "..stats.totalScore,
+        bigFont,0,170,gameWidth,"center")
 end

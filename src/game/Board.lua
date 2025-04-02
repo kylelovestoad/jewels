@@ -15,6 +15,7 @@ function Board:init(x,y, stats)
     self.x = x
     self.y = y
     self.stats = stats
+    stats.board = self
     self.cursor = Cursor(self.x,self.y,Board.TILESIZE+1)
 
     self.tiles = Matrix:new(Board.MAXROWS,Board.MAXCOLS)
@@ -36,6 +37,21 @@ function Board:createGem(row,col)
                self.y+(row-1)*Board.TILESIZE,
                math.random(4,8) )
 end
+
+function Board:addRandomCoin()
+    local row = math.random(self.MAXROWS)
+    local col = math.random(self.MAXCOLS)
+
+    while board.tiles[row][col].type == 1 do
+        row = math.random(self.MAXROWS)
+        col = math.random(self.MAXCOLS)
+    end
+
+    print(row)
+    print(col)
+
+    board.tiles[row][col]:setType(1)
+end 
 
 function Board:fixInitialMatrix()
     -- First we check horizontally
@@ -236,27 +252,56 @@ function Board:findVerticalMatches()
     return matches
 end
 
+function Board:removeCoins(x, y)
+    -- Each offset for adjacent tiles
+    local offsets = {
+        {x = -1, y = 0}, {x = 1, y = 0}, 
+        {x = 0, y = -1}, {x = 0, y = 1}
+    }
+
+    for _, offset in ipairs(offsets) do
+        local row = x + offset.x 
+        local col = y + offset.y 
+        if self.tiles[row] and self.tiles[row][col] and self.tiles[row][col].type == 1 then
+            self.stats:addScore(500)
+            self:createExplosion(row, col,self.tiles[row][col]:color())
+            self.tiles[row][col] = nil
+            Sounds["coin"]:play()
+        end
+    end
+    
+end
+
 function Board:matches()
     local horMatches = self:findHorizontalMatches()
     local verMatches = self:findVerticalMatches() 
     local score = 0
 
+    local toRemove = {}
+
     if #horMatches > 0 or #verMatches > 0 then -- if there are matches
-        for k, match in pairs(horMatches) do
+        for _, match in pairs(horMatches) do
             score = score + 2^match.size * 10   
             for j=0, match.size-1 do
-                self.tiles[match.row][match.col+j] = nil
-                self:createExplosion(match.row,match.col+j)
+                local color = self.tiles[match.row][match.col + j]:color()
+                self:removeCoins(match.row, match.col + j)
+                table.insert(toRemove, {x = match.row, y = match.col + j})
+                self:createExplosion(match.row,match.col+j, color)
             end -- end for j 
         end -- end for each horMatch
 
-        for k, match in pairs(verMatches) do
+        for _, match in pairs(verMatches) do
             score = score + 2^match.size * 10   
             for i=0, match.size-1 do
-                self.tiles[match.row+i][match.col] = nil
-                self:createExplosion(match.row+i,match.col)
+                self:removeCoins(match.row + i, match.col)
+                table.insert(toRemove, {x = match.row + i, y = match.col})
+                self:createExplosion(match.row+i,match.col, self.tiles[match.row + i][match.col]:color())
             end -- end for i 
         end -- end for each verMatch
+
+        for _, removedTile in ipairs(toRemove) do
+            self.tiles[removedTile.x][removedTile.y] = nil
+        end
 
         if Sounds["breakGems"]:isPlaying() then
             Sounds["breakGems"]:stop()
@@ -270,8 +315,10 @@ function Board:matches()
     end -- end if (has matches)
 end
 
-function Board:createExplosion(row,col)
+function Board:createExplosion(row,col,color)
     local exp = Explosion()
+    -- Not unpacking doesn't work here
+    exp:setColor(unpack(color))
     exp:trigger(self.x+(col-1)*Board.TILESIZE+Board.TILESIZE/2,
                self.y+(row-1)*Board.TILESIZE+Board.TILESIZE/2)  
     table.insert(self.explosions, exp) -- add exp to our array

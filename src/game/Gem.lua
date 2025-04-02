@@ -28,6 +28,19 @@ function Gem:nextType()
     self:setType(newtype)
 end
 
+function Gem:color()
+    -- Color mapping based on gem type
+    local colors = {
+        [1] = {1, 0.8, 0},
+        [4] = {1, 1, 0}, -- Yellow
+        [5] = {0, 0, 1}, -- Blue
+        [6] = {0.5, 0.5, 0.5}, -- Gray
+        [7] = {1, 0, 0}, -- Red  
+        [8] = {0, 1, 0}, -- Green
+    }
+    return colors[self.type] or {1, 1, 1} -- Default to white
+end
+
 function Gem:update(dt)
     self.animation:update(dt)
 end
