@@ -17,6 +17,7 @@ function Stats:init()
     self.countdown = self.maxSecs -- elapsed seconds
     self.timeOut = false -- when time is out
     self.combo = 0
+    self.comboMarkers = {}
     self.levelingAnimation = false
     self.tweenLevel = nil
     self.board = nil
@@ -44,11 +45,23 @@ function Stats:draw()
         love.graphics.printf("Combo "..tostring(self.combo), statFont,gameWidth-210,gameHeight - 40,200,"right")
     end
     love.graphics.setColor(1,1,1) -- White
+
+    for _, marker in ipairs(self.comboMarkers) do
+        marker:draw()
+    end
 end
     
 function Stats:update(dt) -- for now, empty function
     if self.levelingAnimation then
         self.levelingAnimation = not self.tweenLevel:update(dt)
+    end
+
+    for i = #self.comboMarkers, 1, -1 do
+        local marker = self.comboMarkers[i]
+        marker:update(dt)
+        if marker.alpha <= 0 then
+            table.remove(self.comboMarkers, i)  -- Safe removal
+        end
     end
 
     Timer.update(dt)
@@ -59,25 +72,7 @@ function Stats:addScore(n)
     if self.totalScore > self.targetScore then
         self:levelUp()
     end
-end
-
--- My boomerang tween effect
--- I know I could have used two tweens, but I wanted to try a custom tween function
-local function boomerangTween(time, begin, _, duration)
-    -- Where the boomerang stops and starts going back
-    local mid = gameHeight/2 - begin
-    local half = duration / 2
-    -- Go forwards for half of the duration, then go back
-    -- Time moves towards duration, so duration / 2 is the halfway point
-    if time < half then
-        -- mid - begin is the change between starting and ending y val since it is moving forwards
-        return Tween.easing.outCubic(time, begin, mid - begin, half)
-    else
-        -- time - half = 0 at the halfway point, 0 is the beginning of a tween
-        -- begin - mid is the change between starting and ending since it is moving backwards
-        return Tween.easing.inCubic(time - half, mid, begin - mid, half)
-    end
-end
+end 
 
 function Stats:levelUp()
     self.level = self.level +1
@@ -88,8 +83,8 @@ function Stats:levelUp()
     Sounds["levelUp"]:play()
 
     self.board:addRandomCoin()
-    
-    self.tweenLevel = Tween.new(2.6, self, { y = 10 }, boomerangTween)
+
+    self.tweenLevel = Tween.new(2.6, self, { y = 10 }, BoomerangTween)
 end
 
 function Stats:reset()

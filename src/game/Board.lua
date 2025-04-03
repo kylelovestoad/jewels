@@ -4,6 +4,7 @@ local Tween = require "libs.tween"
 
 local Gem = require "src.game.Gem"
 local Cursor = require "src.game.Cursor"
+local ComboMarker = require "src.game.ComboMarker"
 local Explosion = require "src.game.Explosion"
 local Sounds = require "src.game.SoundEffects"
 
@@ -324,10 +325,17 @@ function Board:matches()
         Sounds["breakGems"]:play()
         
         -- Add +0.50 multiplier for each chain
-        -- coinMultiplier is xMult
         local comboMultiplier = 1 + (self.stats.combo * 0.50)
+
+        if self.stats.combo > 1 then
+            local randX = math.random(gameWidth / 2 - (gameWidth / 4), gameWidth / 2 + (gameWidth / 4))
+            local comboMarker = ComboMarker(randX, 50, self.stats.combo, comboMultiplier)
+            table.insert(self.stats.comboMarkers, comboMarker)
+            comboMarker:playAnimation()
+        end
+        
         -- floor to truncate as integer
-        local total = math.floor(score + bonus * comboMultiplier)
+        local total = math.floor((score + bonus) * comboMultiplier)
         print("Total:"..total)
         self.stats:addScore(total)
         self.stats.combo = self.stats.combo + 1

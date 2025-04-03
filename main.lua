@@ -7,6 +7,25 @@ local Border = require "src.game.Border"
 local Explosion = require "src.game.Explosion"
 local Sounds = require "src.game.SoundEffects"
 local Stats = require "src.game.Stats"
+local Tween = require "libs.tween"
+
+-- My boomerang tween effect
+-- I know I could have used two tweens for this, but I wanted to try a custom tween function
+function BoomerangTween(time, begin, _, duration)
+    -- Where the boomerang stops and starts going back
+    local mid = gameHeight/2 - begin
+    local half = duration / 2
+    -- Go forwards for half of the duration, then go back
+    -- Time moves towards duration, so duration / 2 is the halfway point
+    if time < half then
+        -- mid - begin is the change between starting and ending y val since it is moving forwards
+        return Tween.easing.outCubic(time, begin, mid - begin, half)
+    else
+        -- time - half = 0 at the halfway point, 0 is the beginning of a tween
+        -- begin - mid is the change between starting and ending since it is moving backwards
+        return Tween.easing.inCubic(time - half, mid, begin - mid, half)
+    end
+end
 
 function math.clamp(num, low, high) return math.min(math.max(num, low), high) end
 
