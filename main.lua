@@ -1,3 +1,8 @@
+-- Author: Kyle Richards
+-- Had fun with this! Making the animations was super fun and cool. If I were to change one thing I would refactor a bit more
+-- And make the gamestates a bit better with hump.gamestate. Maybe also make it so the gems would move back if they don't make a match
+
+
 local Globals = require "src.Globals"
 local Push = require "libs.push"
 local Background = require "src.game.Background"
@@ -8,8 +13,6 @@ local Explosion = require "src.game.Explosion"
 local Sounds = require "src.game.SoundEffects"
 local Stats = require "src.game.Stats"
 
--- Had fun with this! Making the animations was super fun and cool. If I were to change one thing I would refactor a bit more
--- And make the gamestates a bit better with hump.gamestate. Maybe also make it so the gems would move back if they don't make a match
 
 -- Load is executed only once; used to setup initial resource for your game
 function love.load()
