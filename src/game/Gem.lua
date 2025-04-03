@@ -25,13 +25,14 @@ end
 function Gem:nextType()
     local newtype = self.type+1
     if newtype > 8 then newtype = 4 end
+    print(newtype)
     self:setType(newtype)
 end
 
 function Gem:color()
     -- Color mapping based on gem type
     local colors = {
-        [1] = {1, 0.8, 0},
+        [1] = {1, 0.8431, 0}, -- Gold
         [4] = {1, 1, 0}, -- Yellow
         [5] = {0, 0, 1}, -- Blue
         [6] = {0.5, 0.5, 0.5}, -- Gray

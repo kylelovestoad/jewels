@@ -8,6 +8,8 @@ local Explosion = require "src.game.Explosion"
 local Sounds = require "src.game.SoundEffects"
 local Stats = require "src.game.Stats"
 
+function math.clamp(num, low, high) return math.min(math.max(num, low), high) end
+
 -- Load is executed only once; used to setup initial resource for your game
 function love.load()
     love.window.setTitle("Jewels")
