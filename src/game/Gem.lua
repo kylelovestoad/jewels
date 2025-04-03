@@ -25,7 +25,6 @@ end
 function Gem:nextType()
     local newtype = self.type+1
     if newtype > 8 then newtype = 4 end
-    print(newtype)
     self:setType(newtype)
 end
 

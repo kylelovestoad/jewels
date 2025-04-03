@@ -11,7 +11,7 @@ function Stats:init()
     self.y = 10 -- we will need it for tweening later
     self.level = 1 -- current level    
     self.totalScore = 0 -- total score so far
-    self.startingTargetScore = 100
+    self.startingTargetScore = 1000
     self.targetScore = self.startingTargetScore
     self.maxSecs = 99 -- max seconds for the level
     self.countdown = self.maxSecs -- elapsed seconds
@@ -77,6 +77,24 @@ function Stats:addScore(n)
     end
 end 
 
+-- My boomerang tween effect
+-- I know I could have used two tweens for this, but I wanted to try a custom tween function
+local function boomerangTween(time, begin, _, duration)
+    -- Where the boomerang stops and starts going back
+    local mid = gameHeight/2 - begin
+    local half = duration / 2
+    -- Go forwards for half of the duration, then go back
+    -- Time moves towards duration, so duration / 2 is the halfway point
+    if time < half then
+        -- mid - begin is the change between starting and ending y val since it is moving forwards
+        return Tween.easing.outCubic(time, begin, mid - begin, half)
+    else
+        -- time - half = 0 at the halfway point, 0 is the beginning of a tween
+        -- begin - mid is the change between starting and ending since it is moving backwards
+        return Tween.easing.inCubic(time - half, mid, begin - mid, half)
+    end
+end
+
 function Stats:levelUp()
     self.level = self.level +1
     self.targetScore = self.targetScore+self.level*1000
@@ -87,7 +105,7 @@ function Stats:levelUp()
 
     self.board:addRandomCoin()
 
-    self.tweenLevel = Tween.new(2.6, self, { y = 10 }, BoomerangTween)
+    self.tweenLevel = Tween.new(2.6, self, { y = 10 }, boomerangTween)
 end
 
 function Stats:reset()

@@ -281,11 +281,12 @@ function Board:matches()
     local score = 0
 
     -- This holds all tiles needed to be removed
+    -- It's a set so that there are no duplicates, 
+    -- this fixes issues where removing a dupe would cause type to try to be accessed on a nil value
     local removeSet = {}
 
     if #horMatches > 0 or #verMatches > 0 then -- if there are matches
         for _, match in pairs(horMatches) do
-            print("Match: "..match.size)
             score = score + 2^match.size * 10 
             for j=0, match.size-1 do
                 -- Prepare the tile to be removed, but leave it unremoved so color can be accessed
@@ -298,9 +299,7 @@ function Board:matches()
         end -- end for each horMatch
 
         for _, match in pairs(verMatches) do
-            print("Match: "..match.size)
-            score = score + 2^match.size * 10   
-            print("Original Score: "..score)
+            score = score + 2^match.size * 10 
             for i=0, match.size-1 do
                 -- Prepare the tile to be removed, but leave it unremoved so color can be accessed
                 local row = match.row + i
@@ -330,12 +329,11 @@ function Board:matches()
         
         -- floor to truncate as integer
         local total = math.floor((score + bonus) * comboMultiplier)
-        print("Total:"..total)
         self.stats:addScore(total)
         self.stats.combo = self.stats.combo + 1
 
         if self.stats.combo > 1 then
-            local comboMarker = ComboMarker(gameHeight / 2, 3 * gameHeight / 4, self.stats.combo, comboMultiplier)
+            local comboMarker = ComboMarker(gameHeight / 2, gameHeight / 4, self.stats.combo, comboMultiplier)
             table.insert(self.stats.comboMarkers, comboMarker)
             comboMarker:playAnimation()
         end

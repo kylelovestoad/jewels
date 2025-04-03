@@ -1,5 +1,4 @@
 local Class = require "libs.hump.class"
-local Timer = require "libs.hump.timer"
 local Tween = require "libs.tween" 
 
 local comboFontSize = 36
@@ -34,7 +33,7 @@ function ComboMarker:update(dt)
 end
 
 function ComboMarker:playAnimation()
-    self.tweenAnimation = Tween.new(1, self, { y = self.y - 40, alpha = 0, backgroundAlpha = 0}, Tween.easing.outQuad)
+    self.tweenAnimation = Tween.new(1.5, self, { y = self.y - 40, alpha = 0, backgroundAlpha = 0}, Tween.easing.outQuad)
     self.animation = true
 end
 

@@ -7,27 +7,9 @@ local Border = require "src.game.Border"
 local Explosion = require "src.game.Explosion"
 local Sounds = require "src.game.SoundEffects"
 local Stats = require "src.game.Stats"
-local Tween = require "libs.tween"
 
--- My boomerang tween effect
--- I know I could have used two tweens for this, but I wanted to try a custom tween function
-function BoomerangTween(time, begin, _, duration)
-    -- Where the boomerang stops and starts going back
-    local mid = gameHeight/2 - begin
-    local half = duration / 2
-    -- Go forwards for half of the duration, then go back
-    -- Time moves towards duration, so duration / 2 is the halfway point
-    if time < half then
-        -- mid - begin is the change between starting and ending y val since it is moving forwards
-        return Tween.easing.outCubic(time, begin, mid - begin, half)
-    else
-        -- time - half = 0 at the halfway point, 0 is the beginning of a tween
-        -- begin - mid is the change between starting and ending since it is moving backwards
-        return Tween.easing.inCubic(time - half, mid, begin - mid, half)
-    end
-end
-
-function math.clamp(num, low, high) return math.min(math.max(num, low), high) end
+-- Had fun with this! Making the animations was super fun and cool. If I were to change one thing I would refactor a bit more
+-- And make the gamestates a bit better with hump.gamestate. Maybe also make it so the gems would move back if they don't make a match
 
 -- Load is executed only once; used to setup initial resource for your game
 function love.load()
@@ -66,6 +48,7 @@ function love.keypressed(key)
         gameState = "play"
     elseif key == "return" and gameState == "over" then
         stats:reset()
+        board = Board(140,80,stats)
         gameState = "play"
     end
 end
@@ -76,7 +59,7 @@ function love.mousepressed(x, y, button, _)
     if button == 1 then -- regurlar mouse click
         board:mousepressed(gx,gy)
     elseif debugFlag then
-        if button == 2 and love.keyboard.isDown("a","d") then
+        if button == 2 and love.keyboard.isDown("lctrl","rctrl") then
            testexp:trigger(gx,gy)
         elseif button == 2 then
             board:cheatGem(gx,gy)
