@@ -46,7 +46,8 @@ function Board:addRandomCoin()
     local col = math.random(self.MAXCOLS)
 
     -- So that it doesn't replace an existing coin
-    while not self.tiles[row][col] and self.tiles[row][col].type == 1 do
+    -- Short circuits on nil check so it won't access type
+    while not self.tiles[row][col] or self.tiles[row][col].type == 1 do
         row = math.random(self.MAXROWS)
         col = math.random(self.MAXCOLS)
     end
@@ -326,19 +327,18 @@ function Board:matches()
         
         -- Add +0.50 multiplier for each chain
         local comboMultiplier = 1 + (self.stats.combo * 0.50)
-
-        if self.stats.combo > 1 then
-            local randX = math.random(gameWidth / 2 - (gameWidth / 4), gameWidth / 2 + (gameWidth / 4))
-            local comboMarker = ComboMarker(randX, 50, self.stats.combo, comboMultiplier)
-            table.insert(self.stats.comboMarkers, comboMarker)
-            comboMarker:playAnimation()
-        end
         
         -- floor to truncate as integer
         local total = math.floor((score + bonus) * comboMultiplier)
         print("Total:"..total)
         self.stats:addScore(total)
         self.stats.combo = self.stats.combo + 1
+
+        if self.stats.combo > 1 then
+            local comboMarker = ComboMarker(gameHeight / 2, 3 * gameHeight / 4, self.stats.combo, comboMultiplier)
+            table.insert(self.stats.comboMarkers, comboMarker)
+            comboMarker:playAnimation()
+        end
 
         self:shiftGems()
         self:generateNewGems()

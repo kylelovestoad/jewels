@@ -56,11 +56,14 @@ function Stats:update(dt) -- for now, empty function
         self.levelingAnimation = not self.tweenLevel:update(dt)
     end
 
+    -- Stats manages the combo markers, maybe could be delegated to a different object?
+    -- Uses reverse traversal to prevent problems with index skipping
     for i = #self.comboMarkers, 1, -1 do
         local marker = self.comboMarkers[i]
         marker:update(dt)
+        -- A bit of a jank check, but it works, I'd want to come back to this to make it a bit cleaner
         if marker.alpha <= 0 then
-            table.remove(self.comboMarkers, i)  -- Safe removal
+            table.remove(self.comboMarkers, i) -- Safe removal since iteration is in reverse
         end
     end
 
